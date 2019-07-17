@@ -3,13 +3,50 @@
 import numpy
 import sys
 import math
-
+import cv2
 from PIL import Image
-numpy.set_printoptions(threshold=numpy.nan) # print all data
+numpy.set_printoptions(threshold=numpy.nan)  # print all data
 
 #################
 # Image helpers #
 #################
+
+
+def pad_image(arr, kernel_mid):
+    """
+    Pad the original image with pixels on the border
+    Args:
+        arr       : the numpy array
+        kernel_mid: the kernel mid
+    Returns:
+        the extended numpy array
+    """
+    (height, width, _bytes_per_pixel) = arr.shape
+    for i in range(kernel_mid):
+        "Dublicate the top row"
+        arr[i] = arr[kernel_mid]
+    for i in range(height - kernel_mid, height):
+        "Duplicate the last row"
+        arr[i] = arr[height - kernel_mid - 1]
+    for i in range(height):
+        "Duplicate the edge columns"
+        for j in range(kernel_mid):
+            "Duplicate left"
+            arr[i][j] = arr[i][kernel_mid]
+        for k in range(width - kernel_mid, width):
+            "Duplicate right"
+            arr[i][k] = arr[i][width - kernel_mid - 1]
+    return arr
+
+
+def add_alpha_channel(arr):
+    # Split the image to 4 channels
+    b_channel, g_channel, r_channel = cv2.split(arr)
+    # creating a dummy alpha channel image.
+    alpha_channel = numpy.ones(b_channel.shape, dtype=b_channel.dtype)
+    img_BGRA = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))
+    return img_BGRA
+
 
 def save_image(arr, filename):
     """Takes a numpy array, in proper shape, and writes is an image
@@ -17,7 +54,7 @@ def save_image(arr, filename):
         arr     : numpy array in shape (x, y, rgb)
         filename: name of the image to write
     """
-    img = Image.fromarray(arr, "RGB")
+    img = Image.fromarray(arr, "RGBA")
     img.save(filename)
 
 
@@ -47,6 +84,7 @@ def flat_array_to_image(arr, dims, filename):
 ##################
 # Kernel Helpers #
 ##################
+
 
 def normalize_kernel(kernel, dim):
     """Normalizes a kernel
@@ -103,5 +141,6 @@ def blur_kernel():
     2 4 2 * 1/16
     1 2 1
     """
-    arr = (numpy.array([[1.0, 2.0, 1.0], [2.0, 4.0, 2.0], [1.0, 2.0, 1.0]])) * 1 / 16
+    arr = (numpy.array(
+        [[1.0, 2.0, 1.0], [2.0, 4.0, 2.0], [1.0, 2.0, 1.0]])) * 1 / 16
     return normalize_kernel(arr, 3)

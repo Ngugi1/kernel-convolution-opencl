@@ -32,5 +32,6 @@ __kernel void convolve(
         output[output_index] = sumRed;
         output[output_index + 1] = sumGreen;
         output[output_index + 2] = sumBlue;
+        output[output_index + 3] = 0;
     }
 }
