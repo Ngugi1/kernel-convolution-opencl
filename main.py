@@ -8,7 +8,7 @@ import time
 from util import *
 
 # Open the kernel 
-kernel = open("kernel_naive.cl").read()
+kernel = open("kernel_float4.cl").read()
 
 # Convolution kernel 
 kernel_dimensions = 5
@@ -36,6 +36,7 @@ img = cv2.copyMakeBorder(img_no_padding, kernel_mid, kernel_mid, kernel_mid, ker
 img = pad_image(img, kernel_mid)
 
 (img_h, img_w,depth) = img.shape
+(img_original_h, img_original_w, _) = img_no_padding.shape
 flat_img = img.flatten()
 flat_kernel = convolution_kernel.flatten()
 
@@ -54,32 +55,17 @@ d_output_img = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, h_output_img.nbytes)
 # Initiate the kernel.
 conv = program.convolve
 conv.set_scalar_arg_dtypes([None, None, None, numpy.uint8, numpy.uint8, numpy.uint32, numpy.uint32, numpy.uint8])
-
-times = numpy.empty(33).astype(numpy.float32)
-times.fill(0.0)
-for i in range(33):
-	start_time = time.time()
-	conv(queue, (img_h, img_w), None, d_input_img , d_output_img, d_kernel, kernel_dimensions, kernel_mid, img_w, img_h, depth)
-	result = numpy.empty_like(img)
-	cl.enqueue_copy(queue, result, d_output_img)
-	queue.finish()
-	end_time = time.time()
-	times[i] = (end_time - start_time) * 1000
-
-queue.finish()
-print(times)
-
-sys.exit()
+conv(queue, (img_original_h, img_original_w), None, d_input_img , d_output_img, d_kernel, kernel_dimensions, kernel_mid, img_w, img_h, depth)
 # Wait for the queue to be completely processed.
 queue.finish()
 # Read the array from the device.
 cl.enqueue_copy(queue, h_output_img, d_output_img)
 # print(h_output_img)
 # end_time = time.time()
-print("GPU time = {} ms".format((end_time - start_time) * 1000))
+# print("GPU time = {} ms".format((end_time - start_time) * 1000))
 reshaped_img = h_output_img.reshape(img.shape)
 # Now remove the padding from image
 reshaped_img = reshaped_img[kernel_mid:-kernel_mid]
 for i in range(len(reshaped_img)):
     img_no_padding[i] = reshaped_img[i][kernel_mid: -kernel_mid]
-save_image(numpy.asarray(img_no_padding).astype(dtype=numpy.uint8), "output_float4.jpg")
+save_image(numpy.asarray(img_no_padding).astype(dtype=numpy.uint8), "output_float4-new.jpg")

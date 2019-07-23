@@ -8,14 +8,14 @@ __kernel void convolve(
     const  int height,
     const  int bytes_per_pixel){
     
-    int row = get_global_id(0);
-    int column = get_global_id(1);
+    // Ignore pixels used for padding
+    int row = get_global_id(0) + kernel_mid;
+    int column = get_global_id(1) + kernel_mid;
     float sumRed = 0.0;
     float sumGreen = 0.0;
     float sumBlue = 0.0;
     // Ignore pixels in the padding
-    if (row >= kernel_mid && row < height - kernel_mid && column >= kernel_mid && column < width - kernel_mid){
-         for(int k_row = 0; k_row < kernel_dim; k_row ++) {
+      for(int k_row = 0; k_row < kernel_dim; k_row ++) {
              for(int k_col = 0; k_col < kernel_dim; k_col ++){  
                 // X and Y of pixel on which kernel maps.
                 int image_r_idx = row + (k_row - kernel_mid);
@@ -33,5 +33,4 @@ __kernel void convolve(
         output[output_index + 1] = sumGreen;
         output[output_index + 2] = sumBlue;
         output[output_index + 3] = 1;
-    }
 }
