@@ -4,6 +4,7 @@ import pyopencl as cl
 import numpy
 import sys
 import cv2
+import time
 from util import *
 # Write down our kernel as a multiline string.
 kernel = open("kernel_naive.cl").read()
@@ -17,19 +18,19 @@ h_kernel_flat = h_kernel.flatten()
 # Image without padding
 img_no_padding = image_to_array(sys.argv[1])
 img_no_padding = add_alpha_channel(img_no_padding)
-padding = [255.0, 255.0, 255.0]
+padding = [0, 0, 0, 0]
 # Image with zero padding
-img = cv2.copyMakeBorder(image_to_array(
-    sys.argv[1]), h_kernel_mid, h_kernel_mid, h_kernel_mid, h_kernel_mid, cv2.BORDER_CONSTANT, value=padding)
-img = add_alpha_channel(img)
+img = cv2.copyMakeBorder(img_no_padding, h_kernel_mid, h_kernel_mid, h_kernel_mid, h_kernel_mid, cv2.BORDER_CONSTANT, value=padding)
 img = pad_image(img, h_kernel_mid)
+img = img_no_padding
 # Convert types
 (img_h, img_w, bytes_per_pixel) = img.shape
-
 # Step 1: Create a context.
 # This will ask the user to select the device to be used.
 # Can be automatic, too.
 context = cl.create_some_context()
+# Start timing here after the device is selected
+start_time = time.time()
 # Create a queue to the device.
 queue = cl.CommandQueue(context)
 # Create the program.
@@ -57,7 +58,7 @@ d_kernel = cl.Buffer(context, cl.mem_flags.READ_ONLY |
 # Create the memory on the device to put the result into.
 d_output_image = cl.Buffer(
     context, cl.mem_flags.WRITE_ONLY, img.flatten().nbytes)
-# Execute the kernel.
+# Execute the kernel.c
 # Here you can reference multiple kernels. For didactic purposes I copied the kernel and gave it slightly different name.
 # You can reference both kernels here.
 convolve = program.convolve
@@ -74,17 +75,18 @@ queue.finish()
 # Read the array from the device.
 # https://documen.tician.de/pyopencl/runtime_memory.html?highlight=enqueue_copy#pyopencl.enqueue_copy
 cl.enqueue_copy(queue, h_output_image, d_output_image)
-
 # Output image
 reshaped_img = h_output_image.reshape(img.shape)
+
 # Now remove the padding from image
 reshaped_img = reshaped_img[h_kernel_mid:-h_kernel_mid]
 for i in range(0, (len(reshaped_img) - 1)):
     img_no_padding[i] = reshaped_img[i][h_kernel_mid: -h_kernel_mid]
-
+end_time = time.time()
+print("GPU time = {} ms".format((end_time - start_time) * 1000))
 # Verify the results
-print(img_no_padding[0])
-
-save_image(img_no_padding, "output.jpg")
+# print(img_no_padding[0])
+img_no_padding = numpy.asarray(img_no_padding).astype(numpy.int8)
+save_image(img_no_padding, "kernel_float4.jpg")
 
 # Verify the results againist the known image
