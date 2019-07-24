@@ -1,7 +1,7 @@
 __kernel void convolve(
-    __global  const float4* input,
-    __global  float4* output,
-    __global  const float* img_kernel,
+    __global   const float4* input,
+    __global   float4* output,
+    __constant float* img_kernel,
     const  int kernel_dim,
     const  int kernel_mid,
     const  int width,

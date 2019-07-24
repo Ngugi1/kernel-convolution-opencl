@@ -55,6 +55,23 @@ d_output_img = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, h_output_img.nbytes)
 # Initiate the kernel.
 conv = program.convolve
 conv.set_scalar_arg_dtypes([None, None, None, numpy.uint8, numpy.uint8, numpy.uint32, numpy.uint32, numpy.uint8])
+
+times = numpy.empty(50).astype(numpy.float32)
+
+for i in range(50):
+	start_time = time.time()
+	conv(queue, (img_original_h, img_original_w), None, d_input_img , d_output_img, d_kernel, kernel_dimensions, kernel_mid, img_w, img_h, depth)
+	queue.finish()
+	# Read the array from the device.
+	cl.enqueue_copy(queue, h_output_img, d_output_img)
+	queue.finish()
+	end_time = time.time()
+	times[i] = end_time - start_time
+
+print(numpy.around((times * 1000), decimals=1))
+
+sys.exit()
+
 conv(queue, (img_original_h, img_original_w), None, d_input_img , d_output_img, d_kernel, kernel_dimensions, kernel_mid, img_w, img_h, depth)
 # Wait for the queue to be completely processed.
 queue.finish()
