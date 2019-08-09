@@ -7,113 +7,108 @@ import cv2
 import time
 from util import *
 
-def conv(img_path, convolution_kernel, kernel_mid):
-	# img - fully preprocessed image
-	# convolution_kernel - opencl kernel
-	
-	# Load input image 
-	img_no_padding = image_to_array(img_path)
 
-	# Add extra channel to enable
-	img_no_padding = add_alpha_channel(img_no_padding)
+def conv(img_path, convolution_kernel, kernel_dim, kernel_mid):
+    # img - fully preprocessed image
+    # convolution_kernel - opencl kernel
 
-	# Add padding to the image 
-	padding = [0, 0 ,0 , 0]
-	img = cv2.copyMakeBorder(img_no_padding, kernel_mid, kernel_mid, kernel_mid, kernel_mid, cv2.BORDER_CONSTANT, value=padding)
-	img = pad_image(img, kernel_mid)
+    # Load input image
+    img_no_padding = image_to_array(img_path)
 
-	# Determine height and width of both original and padded image
-	(img_h, img_w,depth) = img.shape
-	(img_original_h, img_original_w, _) = img_no_padding.shape
-	
-	# Flatten the image and the kernel
-	flat_img = img.flatten()
-	flat_kernel = convolution_kernel.flatten()
+    # Add extra channel to enable
+    img_no_padding = add_alpha_channel(img_no_padding)
 
-	# opencl kernel 
-	kernel = open("kernel_float4.cl").read()
+    # Add padding to the image
+    padding = [0, 0, 0, 0]
+    img = cv2.copyMakeBorder(img_no_padding, kernel_mid, kernel_mid,
+                             kernel_mid, kernel_mid, cv2.BORDER_CONSTANT, value=padding)
+    img = pad_image(img, kernel_mid)
 
+    # Determine height and width of both original and padded image
+    (img_h, img_w, depth) = img.shape
+    (img_original_h, img_original_w, _) = img_no_padding.shape
 
-	# Create context 
-	# Choose a device 
-	platforms = cl.get_platforms()
-	devices = platforms[0].get_devices()
-	context = cl.Context([devices[1]])
+    # Flatten the image and the kernel
+    flat_img = img.reshape((img_h*img_w*depth))
+    flat_kernel = convolution_kernel.reshape((kernel_dim * kernel_dim))
+    # Create the result image.
+    h_output_img = numpy.zeros(img_h * img_w * depth).astype(numpy.float32)
 
+    # opencl kernel
+    kernel = open("kernel_float41.cl").read()
 
-    # Or choose a device manually 
-    # context = cl.create_some_context()
-
-    # Start timing the execution.
-	start_time = time.time()
+    # Create context
+    # Choose a device
+    platforms = cl.get_platforms()
+    devices = platforms[0].get_devices()
+    context = cl.Context([devices[1]])
 
 
-    # Create a queue to the device.
-	queue = cl.CommandQueue(context)
+# Or choose a device manually
+# context = cl.create_some_context()
 
-	# Create the program.
-	program = cl.Program(context, kernel).build()
-
-	# Create the result image.
-	h_output_img = numpy.empty(img_h * img_w * depth).astype(numpy.float32)
-	h_output_img.fill(0.0)
+# Start timing the execution.
+    start_time = time.time()
 
 
-	# Send the data to the guest memory.
-	d_input_img = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=flat_img)
-	d_kernel = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=flat_kernel)
+# Create a queue to the device.
+    queue = cl.CommandQueue(context)
 
-	# Create the memory on the device to put the result into.
-	d_output_img = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, h_output_img.nbytes)
+    # Create the program.
+    program = cl.Program(context, kernel).build()
 
-	# Initialize the kernel.
-	conv = program.convolve
-	conv.set_scalar_arg_dtypes([None, None, None, numpy.uint8, numpy.uint8, numpy.uint32, numpy.uint32, numpy.uint8])
+    # Send the data to the guest memory.
+    d_input_img = cl.Buffer(context, cl.mem_flags.READ_ONLY |
+                            cl.mem_flags.COPY_HOST_PTR, hostbuf=flat_img)
+    d_kernel = cl.Buffer(context, cl.mem_flags.READ_ONLY |
+                         cl.mem_flags.COPY_HOST_PTR, hostbuf=flat_kernel)
 
-	# Execute the kernel
-	conv(queue, (img_original_h, img_original_w), None, d_input_img , d_output_img, d_kernel, kernel_dimensions, kernel_mid, img_w, img_h, depth)
-	
-	# Wait for the queue to be completely processed.
-	queue.finish()
+    # Create the memory on the device to put the result into.
+    d_output_img = cl.Buffer(
+        context, cl.mem_flags.WRITE_ONLY, h_output_img.nbytes)
 
-	# Read the array from the device.
-	cl.enqueue_copy(queue, h_output_img, d_output_img)
+    # Initialize the kernel.
+    conv = program.convolve
+    conv.set_scalar_arg_dtypes(
+        [None, None, None, numpy.uint8, numpy.uint8, numpy.uint32, numpy.uint32, numpy.uint8])
 
-	# Reshape the image array 
-	result_image = h_output_img.reshape(img.shape)
+    # Execute the kernel
+    conv(queue, (img_original_h, img_original_w), None, d_input_img,
+         d_output_img, d_kernel, kernel_dimensions, kernel_mid, img_w, img_h, depth)
 
-	# Now remove the padding from image
-	result_image = result_image[kernel_mid:-kernel_mid]
+    # Wait for the queue to be completely processed.
+    queue.finish()
 
-	for i in range(len(result_image)):
-		img_no_padding[i] = result_image[i][kernel_mid:-kernel_mid]
-   	# stop the time 
-   	elapsed_time = (time.time() - start_time) * 1000
+    # Read the array from the device.
+    cl.enqueue_copy(queue, h_output_img, d_output_img)
 
-   	# final img 
-   	res = numpy.asarray(img_no_padding).astype(dtype=numpy.uint8)
+    # stop the time
+    print((time.time() - start_time) * 1000)
 
-   	# Return the time and the image 
-   	return  res , elapsed_time
+    # Reshape the image array
+    result_image = h_output_img.reshape(img.shape)
+
+    # Now remove the padding from image
+    result_image = result_image[kernel_mid:-kernel_mid]
+
+    for i in range(len(result_image)):
+        img_no_padding[i] = result_image[i][kernel_mid:-kernel_mid]
+
+    # final img
+    res = numpy.asarray(img_no_padding).astype(dtype=numpy.uint8)
+
+    # Return the time and the image
+    return res
 
 
-
-# Execute 
-# Gausian kernel 
-# Convolution kernel 
+# Execute
+# Gausian kernel
+# Convolution kernel
 kernel_dimensions = 5
 kernel_sign = 1
 kernel_mid = kernel_dimensions / 2
 convolution_kernel = gaussian_kernel(kernel_dimensions, kernel_sign)
 
-image, elapsed_time = conv(sys.argv[1], convolution_kernel, kernel_mid)
-save_image(image, "output_float4.jpg")
-
-
-
-
-
-
-
-
-	
+image = conv(
+    sys.argv[1], convolution_kernel, kernel_dimensions, kernel_mid)
+save_image(image, "output-float4.jpg")

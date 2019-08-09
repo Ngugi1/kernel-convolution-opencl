@@ -36,7 +36,7 @@ def pad_image(arr, kernel_mid):
         for k in range(width - kernel_mid, width):
             "Duplicate right"
             arr[i][k] = arr[i][width - kernel_mid - 1]
-    return arr.astype(dtype=numpy.float32)
+    return arr.astype(dtype=numpy.uint8)
 
 
 def add_alpha_channel(arr):
@@ -67,7 +67,7 @@ def image_to_array(file):
     """
     img = Image.open(file)
     # Convert the image to a numpy matrix.
-    img_arr = numpy.asarray(img).astype(numpy.float32)
+    img_arr = numpy.asarray(img).astype(numpy.uint8)
     return img_arr
 
 

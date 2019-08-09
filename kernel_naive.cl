@@ -1,6 +1,6 @@
 __kernel void convolve(
-    __global float* input,
-    __global float* output,
+    __global unsigned char* input,
+    __global unsigned char* output,
     __global float* img_kernel,
     const  int kernel_dim,
     const  int kernel_mid,
@@ -22,13 +22,13 @@ __kernel void convolve(
                 int image_c_idx = column + (k_col - kernel_mid);
                 float kernel_value = img_kernel[k_row * kernel_dim + k_col];
                 int index_on_flat_img  = (image_r_idx * width * bytes_per_pixel)  + (image_c_idx * bytes_per_pixel);
-                sumRed = sumRed + (kernel_value * input[index_on_flat_img]);
-                sumGreen = sumGreen + (kernel_value * input[index_on_flat_img + 1]);
-                sumBlue = sumBlue + (kernel_value * input[index_on_flat_img + 2]);
+                sumRed += (kernel_value * input[index_on_flat_img]);
+                sumGreen += (kernel_value * input[index_on_flat_img + 1]);
+                sumBlue += (kernel_value * input[index_on_flat_img + 2]);
             }
         }
         // Calculate output index
-        int output_index = (row * width * bytes_per_pixel) + (column * bytes_per_pixel);
+        unsigned int output_index = (row * width * bytes_per_pixel) + (column * bytes_per_pixel);
         output[output_index] = sumRed;
         output[output_index + 1] = sumGreen;
         output[output_index + 2] = sumBlue;
