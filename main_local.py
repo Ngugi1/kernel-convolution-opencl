@@ -66,8 +66,7 @@ def conv(img_path, convolution_kernel, kernel_name, kernel_dim, kernel_mid, loca
     conv.set_scalar_arg_dtypes(
         [None, None, None, numpy.uint8, numpy.uint8, numpy.uint32, numpy.uint32, numpy.uint8, None])
     global_size = (img_original_h, img_original_w)
-    l = 16
-    workgroup_size = (l * l * depth)
+    workgroup_size = (local_size * local_size * depth)
     # workgroup_size = (local_size, local_size)
     local_memory = cl.LocalMemory(numpy.dtype(
         numpy.uint8).itemsize * workgroup_size)
@@ -78,8 +77,8 @@ def conv(img_path, convolution_kernel, kernel_name, kernel_dim, kernel_mid, loca
         while(x > 0):
             # Execute the kernel
             start_time = time.time()
-            conv(queue, global_size, (l, l), d_input_img,
-                 d_output_img, d_kernel, kernel_dimensions, kernel_mid, img_w, img_h, depth, local_memory)
+            conv(queue, global_size, (local_size, local_size), d_input_img,
+                 d_output_img, d_kernel, kernel_dimensions, kernel_mid, img_w, img_h, depth, local_memory, global_offset=[kernel_mid, kernel_mid])
             # Wait for the queue to be completely processed.
             queue.finish()
             # Read the array from the device.
@@ -115,7 +114,7 @@ kernel_sign = 1
 kernel_mid = kernel_dimensions / 2
 convolution_kernel = gaussian_kernel(kernel_dimensions, kernel_sign)
 kernel_name = sys.argv[2]
-local_size = sys.argv[3]
+local_size = int(sys.argv[3])
 
 image = conv(
     sys.argv[1], convolution_kernel, kernel_name, kernel_dimensions, kernel_mid, local_size)

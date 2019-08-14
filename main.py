@@ -8,7 +8,7 @@ import time
 from util import *
 
 
-def conv(img_path, convolution_kernel, kernel_name, kernel_dim, kernel_mid):
+def conv(img_path, convolution_kernel, kernel_name, kernel_dim, kernel_mid, local_size):
     # img - fully preprocessed image
     # convolution_kernel - opencl kernel
 
@@ -73,7 +73,7 @@ def conv(img_path, convolution_kernel, kernel_name, kernel_dim, kernel_mid):
         while(x > 0):
             # Execute the kernel
             start_time = time.time()
-            conv(queue, (img_original_h, img_original_w), None, d_input_img,
+            conv(queue, (img_original_h, img_original_w), (local_size, local_size), d_input_img,
                  d_output_img, d_kernel, kernel_dimensions, kernel_mid, img_w, img_h, depth)
             # Wait for the queue to be completely processed.
             queue.finish()
@@ -110,7 +110,8 @@ kernel_sign = 1
 kernel_mid = kernel_dimensions / 2
 convolution_kernel = gaussian_kernel(kernel_dimensions, kernel_sign)
 kernel_name = sys.argv[2]
+local_size = int(sys.argv[3])
 
 image = conv(
-    sys.argv[1], convolution_kernel, kernel_name, kernel_dimensions, kernel_mid)
+    sys.argv[1], convolution_kernel, kernel_name, kernel_dimensions, kernel_mid, local_size)
 save_image(image, "output_" + kernel_name + ".jpg")
