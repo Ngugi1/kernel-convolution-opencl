@@ -192,9 +192,6 @@ kernel = gaussian_kernel(kernel_dim, kernel_sig)
 # Image input array
 img_src = img_arr
 img_src = img_src.reshape((img_h * img_w, 3))  # flat list of lists
-
-img_dst = apply_kernel_1d(kernel, kernel_dim, img_h, img_w, img_src)
-
 x = 33
 while x > 0:
     start = time.time()
