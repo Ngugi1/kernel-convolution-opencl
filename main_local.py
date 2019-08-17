@@ -51,8 +51,8 @@ kernel = open(kernel_name + ".cl").read()
 # Create context
 # Choose a device
 platforms = cl.get_platforms()
-devices = platforms[plat].get_devices()
-context = cl.Context([devices[0]])
+devices = platforms[0].get_devices()
+context = cl.Context([devices[plat]])
 
 
 # Or choose a device manually
@@ -87,8 +87,8 @@ for i in range(2):
     total_time = 0
     # Execute the kernel
     start_time = time.time()
-    conv(queue, (img_original_h, img_original_w), (local_size, local_size), d_input_img,
-         d_output_img, d_kernel, kernel_dim, kernel_mid, img_w, img_h, local_memory, global_offset=[kernel_mid, kernel_mid])
+    conv(queue, (img_original_h, img_original_w), None, d_input_img,
+         d_output_img, d_kernel, kernel_dim, kernel_mid, img_w, img_h, local_memory)
     # Wait for the queue to be completely processed.
     queue.finish()
     # Read the array from the device.
