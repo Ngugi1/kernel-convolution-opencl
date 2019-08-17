@@ -86,8 +86,7 @@ for i in range(33):
     # Execute the kernel
     start_time = time.time()
     conv(queue, (img_original_h, img_original_w), (4, 4), d_input_img,
-         d_output_img, d_kernel, kernel_dim, kernel_mid, numpy.uint32(
-             img_w), numpy.uint32(img_h), depth, global_offset=[kernel_mid, kernel_mid])
+         d_output_img, d_kernel, kernel_dim, kernel_mid, img_w, img_h, depth, global_offset=[kernel_mid, kernel_mid])
     # Wait for the queue to be completely processed.
     queue.finish()
     # Read the array from the device.
