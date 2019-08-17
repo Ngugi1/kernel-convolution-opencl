@@ -46,7 +46,8 @@ img = pad_image(img, kernel_mid)
 flat_img = img.reshape((img_h*img_w*depth))
 flat_kernel = convolution_kernel.reshape((kernel_dim * kernel_dim))
 # Create the result image.
-h_output_img = numpy.zeros(img_h * img_w * depth).astype(numpy.uint8)
+h_output_img = numpy.empty(img_h * img_w * depth).astype(numpy.uint8)
+h_output_img.fill(0)
 
 # opencl kernel
 kernel = open(kernel_name + ".cl").read()
@@ -85,7 +86,7 @@ for i in range(33):
     total_time = 0
     # Execute the kernel
     start_time = time.time()
-    conv(queue, (img_original_h, img_original_w), (4, 4), d_input_img,
+    conv(queue, (img_original_h, img_original_w), (local_size, local_size), d_input_img,
          d_output_img, d_kernel, kernel_dim, kernel_mid, img_w, img_h, depth, global_offset=[kernel_mid, kernel_mid])
     # Wait for the queue to be completely processed.
     queue.finish()

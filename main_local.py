@@ -44,7 +44,8 @@ img = pad_image(img, kernel_mid)
 flat_img = img.reshape((img_h*img_w*depth))
 flat_kernel = convolution_kernel.reshape((kernel_dim * kernel_dim))
 # Create the result image.
-h_output_img = numpy.zeros(img_h * img_w * depth).astype(numpy.uint8)
+h_output_img = numpy.empty(img_h * img_w * depth).astype(numpy.uint8)
+h_output_img.fill(0)
 
 # opencl kernel
 kernel = open(kernel_name + ".cl").read()
