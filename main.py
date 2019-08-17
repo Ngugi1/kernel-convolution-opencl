@@ -81,7 +81,7 @@ d_output_img = cl.Buffer(
 # Initialize the kernel.
 conv = program.convolve
 conv.set_scalar_arg_dtypes(
-    [None, None, None, numpy.int8, numpy.int8, numpy.int32, numpy.int32, numpy.int8])
+    [None, None, None, numpy.int32, numpy.int32, numpy.int32, numpy.int32, numpy.int32])
 for i in range(33):
     total_time = 0
     # Execute the kernel
