@@ -83,15 +83,12 @@ conv.set_scalar_arg_dtypes(
 local_memory = cl.LocalMemory(numpy.dtype(
     numpy.uint8).itemsize * (local_size) *
     (local_size) * depth)
-l_size = (local_size, local_size)
-if plat == 0:
-    l_size = (local_size*local_size, 1)
 
 for i in range(33):
     total_time = 0
     # Execute the kernel
     start_time = time.time()
-    conv(queue, (img_original_h, img_original_w), None, d_input_img,
+    conv(queue, (img_original_h, img_original_w), (local_size, local_size), d_input_img,
          d_output_img, d_kernel, kernel_dim, kernel_mid, img_w, img_h, local_memory)
     # Wait for the queue to be completely processed.
     queue.finish()
