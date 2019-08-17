@@ -11,6 +11,34 @@ numpy.set_printoptions(threshold=numpy.nan)  # print all data
 # Image helpers #
 #################
 
+def verifyImage(img, kernel_mid):
+    (h, w, d) = img.shape
+    correct = 0
+    wrong = 0
+    tolerance = 5
+    seq_image = add_alpha_channel(image_to_array("output_seq.jpg"))
+    for i in range(kernel_mid, (h - kernel_mid)):
+        for j in range(kernel_mid, (w - kernel_mid)):
+            seq_pixel = seq_image[i][j]
+            other_pixel = img[i][j]
+            # Use the red byte to check for consistency 
+            if(seq_pixel[0] == 0):
+                relative_error = 0
+                correct = correct + 1
+            else:
+                relative_error = numpy.absolute((seq_pixel[0] - other_pixel[0]) / seq_pixel[0])
+                # Print the index if it's wrong.
+                if relative_error < tolerance:
+                    correct += 1
+                else:
+                    wrong +=1
+    print("correct == {}, Wrong = {}".format(correct, wrong))
+
+
+
+
+
+
 
 def pad_image(arr, kernel_mid):
     """
@@ -43,7 +71,7 @@ def add_alpha_channel(arr):
     # Split the image to 4 channels
     b_channel, g_channel, r_channel = cv2.split(arr)
     # creating a dummy alpha channel image.
-    alpha_channel = numpy.ones(b_channel.shape, dtype=b_channel.dtype)
+    alpha_channel = numpy.zeros(b_channel.shape, dtype=b_channel.dtype)
     img_BGRA = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))
     return img_BGRA
 

@@ -6,10 +6,10 @@ __kernel void convolve(
     const  int kernel_mid,
     const  int width,
     const  int height,
-    const  int bytes_per_pixel){
+    const  int depth){ // Depth is not used here, retained for API convinience
     // Ignore the pixels used for padding 
-    int row = get_global_id(0) + kernel_mid;
-    int column = get_global_id(1) + kernel_mid;
+    int row = get_global_id(0);
+    int column = get_global_id(1);
     float4 newPixel = (float4)(0);
     for(int k_row = 0; k_row < kernel_dim; k_row ++) {
         for(int k_col = 0; k_col < kernel_dim; k_col ++){  
@@ -23,5 +23,6 @@ __kernel void convolve(
         }
     }
     // Calculate output index
+    newPixel.w = 0;
     output[row * width + column] = (uchar4)((uchar)newPixel.x, (uchar)newPixel.y, (uchar)newPixel.z, (uchar)newPixel.w);
 }
