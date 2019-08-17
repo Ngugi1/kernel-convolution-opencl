@@ -1,7 +1,7 @@
-kernel void convolve(
-    global unsigned char* input,
-    global unsigned char* output,
-    global float* img_kernel,
+__kernel void convolve(
+    __global unsigned char* input,
+    __global unsigned char* output,
+    __global float* img_kernel,
       int kernel_dim,
       int kernel_mid,
       int width,

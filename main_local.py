@@ -76,7 +76,7 @@ d_output_img = cl.Buffer(
 
 conv = program.convolve
 conv.set_scalar_arg_dtypes(
-    [None, None, None, numpy.uint8, numpy.uint8, numpy.uint32, numpy.uint32, None])
+    [None, None, None, numpy.int8, numpy.int8, numpy.int32, numpy.int32, None])
 
 
 local_memory = cl.LocalMemory(numpy.dtype(
