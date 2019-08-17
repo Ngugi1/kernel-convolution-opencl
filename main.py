@@ -92,7 +92,6 @@ for i in range(33):
     queue.finish()
     # Read the array from the device.
     cl.enqueue_copy(queue, h_output_img, d_output_img)
-    queue.finish()
     end_time = time.time()
     total_time += end_time - start_time
     # stop the time
