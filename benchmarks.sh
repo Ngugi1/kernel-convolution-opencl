@@ -1,6 +1,6 @@
 #!/bin/bash
 work_group_size=8
-kernel_dim=9
+kernel_dim=5
 img_path="./input/img1.jpg"
 # change kernel_dimensions
 
@@ -64,14 +64,14 @@ img_path="./input/img1.jpg"
 
 # done
 
-python main_local.py ./input/img2.jpg kernel_uchar4_local_mem $work_group_size $kernel_dim 0 >> ./output_cpu_img/output_cpu_local_mem_img_2.csv
+# python main_local.py ./input/img2.jpg kernel_uchar4_local_mem $work_group_size $kernel_dim 0 >> ./output_cpu_img/output_cpu_local_mem_img_2.csv
 
-python main_local.py $img_path kernel_uchar4_local_mem 8 $kernel_dim 0 >> ./output_cpu_wgsize/output_cpu_local_mem_wgs_8.csv
-python main_local.py $img_path kernel_uchar4_local_mem 32 $kernel_dim 0 >> ./output_cpu_wgsize/output_cpu_local_mem_wgs_32.csv
-python main_local.py $img_path kernel_uchar4_local_mem $work_group_size 13 1 >> ./output_gpu_k_dim/output_gpu_local_mem_kernel_dim_13.csv
-python main_local.py $img_path kernel_uchar4_local_mem $work_group_size 17 1 >> ./output_gpu_k_dim/output_gpu_local_mem_kernel_dim_17.csv
-python main_local.py $img_path kernel_uchar4_local_mem 4 $kernel_dim 1 >> ./output_gpu_wgsize/output_gpu_local_mem_wgs_4.csv
-python main_local.py $img_path kernel_uchar4_local_mem 32 $kernel_dim 1 >> ./output_gpu_wgsize/output_gpu_local_mem_wgs_32.csv
+# python main_local.py $img_path kernel_uchar4_local_mem 8 $kernel_dim 0 >> ./output_cpu_wgsize/output_cpu_local_mem_wgs_8.csv
+# python main_local.py $img_path kernel_uchar4_local_mem 32 $kernel_dim 0 >> ./output_cpu_wgsize/output_cpu_local_mem_wgs_32.csv
+# python main_local.py $img_path kernel_uchar4_local_mem $work_group_size 13 1 >> ./output_gpu_k_dim/output_gpu_local_mem_kernel_dim_13.csv
+# python main_local.py $img_path kernel_uchar4_local_mem $work_group_size 17 1 >> ./output_gpu_k_dim/output_gpu_local_mem_kernel_dim_17.csv
+# python main_local.py $img_path kernel_uchar4_local_mem 4 $kernel_dim 1 >> ./output_gpu_wgsize/output_gpu_local_mem_wgs_4.csv
+# python main_local.py $img_path kernel_uchar4_local_mem 32 $kernel_dim 1 >> ./output_gpu_wgsize/output_gpu_local_mem_wgs_32.csv
 
 
 echo "Sequential K-dim-"$kernel_dim
