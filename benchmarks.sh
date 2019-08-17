@@ -45,25 +45,26 @@ do
     PYOPENCL_COMPILER_OUTPUT=1 python main_local.py ./input/img$img.jpg kernel_uchar4_local_mem $work_group_size $kernel_dim 1 >> ./output_gpu_img/output_gpu_local_mem_img_$img.csv
 done 
 
+for wg_size in 4 8 16
+do
+    echo "Kernel Naive >> work group - CPU "$wg_size
+    PYOPENCL_COMPILER_OUTPUT=1 python main.py $img_path kernel_naive $wg_size $kernel_dim 0 >> ./output_cpu_wgsize/output_cpu_naive_wgs_$wg_size.csv
+    echo "Kernel Naive >> work group - GPU "$wg_size
+    PYOPENCL_COMPILER_OUTPUT=1 python main.py $img_path kernel_naive $wg_size $kernel_dim 0 >> ./output_gpu_wgsize/output_gpu_naive_wgs_$wg_size.csv
+
+    echo "Kernel Uchar4 >> work group - CPU "$wg_size
+    PYOPENCL_COMPILER_OUTPUT=1 python main.py $img_path kernel_uchar4 $wg_size $kernel_dim 0 >> ./output_cpu_wgsize/output_cpu_uchar4_wgs_$wg_size.csv
+     echo "Kernel Uchar4 >> work group - GPU"$wg_size
+    PYOPENCL_COMPILER_OUTPUT=1 python main.py $img_path kernel_uchar4 $wg_size $kernel_dim  1 >> ./output_gpu_wgsize/output_gpu_uchar4_wgs_$wg_size.csv
+
+    echo "Kernel Local Memory >> work group - CPU "$wg_size
+    PYOPENCL_COMPILER_OUTPUT=1 python main_local.py $img_path kernel_uchar4_local_mem $wg_size $kernel_dim 0 >> ./output_cpu_wgsize/output_cpu_local_mem_wgs_$wg_size.csv
+    echo "Kernel Local Memory >> work group - GPU "$wg_size
+    PYOPENCL_COMPILER_OUTPUT=1 python main_local.py $img_path kernel_uchar4_local_mem $wg_size $kernel_dim 1 >> ./output_gpu_wgsize/output_gpu_local_mem_wgs_$wg_size.csv
+
+done
+
+
 echo "Sequential K-dim-"$kernel_dim
 python sequential.py $img_path $kernel_dim >> ./baseline.csv
-
-# for wg_size in 4 8 16
-# do
-#     echo "Kernel Naive >> work group - CPU "$wg_size
-#     PYOPENCL_COMPILER_OUTPUT=1 python main.py $img_path kernel_naive $wg_size $kernel_dim 0 >> ./output_cpu_wgsize/output_cpu_naive_wgs_$wg_size.csv
-#     echo "Kernel Naive >> work group - GPU "$wg_size
-#     PYOPENCL_COMPILER_OUTPUT=1 python main.py $img_path kernel_naive $wg_size $kernel_dim 0 >> ./output_gpu_wgsize/output_gpu_naive_wgs_$wg_size.csv
-
-#     echo "Kernel Uchar4 >> work group - CPU "$wg_size
-#     PYOPENCL_COMPILER_OUTPUT=1 python main.py $img_path kernel_uchar4 $wg_size $kernel_dim 0 >> ./output_cpu_wgsize/output_cpu_uchar4_wgs_$wg_size.csv
-#      echo "Kernel Uchar4 >> work group - GPU"$wg_size
-#     PYOPENCL_COMPILER_OUTPUT=1 python main.py $img_path kernel_uchar4 $wg_size $kernel_dim  1 >> ./output_gpu_wgsize/output_gpu_uchar4_wgs_$wg_size.csv
-
-#     echo "Kernel Local Memory >> work group - CPU "$wg_size
-#     PYOPENCL_COMPILER_OUTPUT=1 python main_local.py $img_path kernel_uchar4_local_mem $wg_size $kernel_dim 0 >> ./output_cpu_wgsize/output_cpu_local_mem_wgs_$wg_size.csv
-#     echo "Kernel Local Memory >> work group - GPU "$wg_size
-#     PYOPENCL_COMPILER_OUTPUT=1 python main_local.py $img_path kernel_uchar4_local_mem $wg_size $kernel_dim 1 >> ./output_gpu_wgsize/output_gpu_local_mem_wgs_$wg_size.csv
-
-# done
 
