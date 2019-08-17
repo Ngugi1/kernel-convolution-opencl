@@ -53,8 +53,8 @@ kernel = open(kernel_name + ".cl").read()
 # Create context
 # Choose a device
 platforms = cl.get_platforms()
-devices = platforms[plat].get_devices()
-context = cl.Context([devices[0]])
+devices = platforms[0].get_devices()
+context = cl.Context([devices[plat]])
 
 
 # Or choose a device manually
@@ -81,7 +81,6 @@ d_output_img = cl.Buffer(
 conv = program.convolve
 conv.set_scalar_arg_dtypes(
     [None, None, None, numpy.int8, numpy.int8, numpy.int32, numpy.int32, numpy.int8])
-
 for i in range(33):
     total_time = 0
     # Execute the kernel
@@ -112,4 +111,4 @@ for i in range(len(result_image)):
 image = numpy.asarray(img_no_padding).astype(dtype=numpy.uint8)
 # verifyImage(image, kernel_mid)
 
-save_image(image, "output_" + kernel_name + ".jpg")
+# save_image(image, "output_" + kernel_name + ".jpg")

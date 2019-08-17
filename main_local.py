@@ -51,8 +51,8 @@ kernel = open(kernel_name + ".cl").read()
 # Create context
 # Choose a device
 platforms = cl.get_platforms()
-devices = platforms[plat].get_devices()
-context = cl.Context([devices[0]])
+devices = platforms[0].get_devices()
+context = cl.Context([devices[plat]])
 
 
 # Or choose a device manually
@@ -82,8 +82,11 @@ conv.set_scalar_arg_dtypes(
 local_memory = cl.LocalMemory(numpy.dtype(
     numpy.uint8).itemsize * (local_size) *
     (local_size) * depth)
+l_size = (local_size, local_size)
+if plat == 0:
+    l_size = (local_size*local_size, 1)
 
-for i in range(2):
+for i in range(33):
     total_time = 0
     # Execute the kernel
     start_time = time.time()
