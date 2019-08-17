@@ -51,8 +51,8 @@ kernel = open(kernel_name + ".cl").read()
 # Create context
 # Choose a device
 platforms = cl.get_platforms()
-devices = platforms[0].get_devices()
-context = cl.Context([devices[plat]])
+devices = platforms[plat].get_devices()
+context = cl.Context([devices[0]])
 
 
 # Or choose a device manually
@@ -115,4 +115,4 @@ for i in range(len(result_image)):
 image = numpy.asarray(img_no_padding).astype(dtype=numpy.uint8)
 # verifyImage(image, kernel_mid)
 
-save_image(image, "output_" + kernel_name + ".jpg")
+# save_image(image, "output_" + kernel_name + ".jpg")
