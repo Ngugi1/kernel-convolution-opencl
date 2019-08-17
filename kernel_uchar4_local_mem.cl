@@ -2,10 +2,10 @@ __kernel void convolve(
     __global   uchar4* input,
     __global   uchar4* output,
     __constant float* img_kernel,
-    const  int kernel_dim,
-    const  int kernel_mid,
-    const  int width,
-    const  int height,
+    int kernel_dim,
+    int kernel_mid,
+    int width,
+    int height,
     __local uchar4* localMemory){
 
     // Get global row and coulmn

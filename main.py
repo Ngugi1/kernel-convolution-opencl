@@ -6,7 +6,9 @@ import sys
 import cv2
 import time
 from util import *
+import os
 
+os.environ['PYOPENCL_NO_CACHE'] = '1'
 
 # Execute
 # Gausian kernel
@@ -18,7 +20,7 @@ convolution_kernel = gaussian_kernel(kernel_dim, kernel_sign)
 kernel_name = sys.argv[2]
 local_size = int(sys.argv[3])
 img_path = sys.argv[1]
-
+plat = int(sys.argv[5])
 
 
 # img - fully preprocessed image
@@ -51,8 +53,8 @@ kernel = open(kernel_name + ".cl").read()
 # Create context
 # Choose a device
 platforms = cl.get_platforms()
-devices = platforms[0].get_devices()
-context = cl.Context([devices[1]])
+devices = platforms[plat].get_devices()
+context = cl.Context([devices[0]])
 
 
 # Or choose a device manually
@@ -63,7 +65,6 @@ queue = cl.CommandQueue(context)
 
 # Create the program.
 program = cl.Program(context, kernel).build()
-
 
 
 # Send the data to the guest memory.
@@ -82,23 +83,20 @@ conv.set_scalar_arg_dtypes(
     [None, None, None, numpy.uint8, numpy.uint8, numpy.uint32, numpy.uint32, numpy.uint8])
 
 for i in range(33):
-    x = 10
     total_time = 0
-    while(x > 0):
-        # Execute the kernel
-        start_time = time.time()
-        conv(queue, (img_original_h, img_original_w), None, d_input_img,
-             d_output_img, d_kernel, kernel_dim, kernel_mid, img_w, img_h, depth, global_offset=[kernel_mid, kernel_mid])
-        # Wait for the queue to be completely processed.
-        queue.finish()
-        # Read the array from the device.
-        cl.enqueue_copy(queue, h_output_img, d_output_img)
-        queue.finish()
-        end_time = time.time()
-        total_time += end_time - start_time
-        x -= 1
+    # Execute the kernel
+    start_time = time.time()
+    conv(queue, (img_original_h, img_original_w), None, d_input_img,
+         d_output_img, d_kernel, kernel_dim, kernel_mid, img_w, img_h, depth, global_offset=[kernel_mid, kernel_mid])
+    # Wait for the queue to be completely processed.
+    queue.finish()
+    # Read the array from the device.
+    cl.enqueue_copy(queue, h_output_img, d_output_img)
+    queue.finish()
+    end_time = time.time()
+    total_time += end_time - start_time
     # stop the time
-    print((total_time / 10) * 1000)
+    print(total_time * 1000)
 
 # Reshape the image array
 result_image = h_output_img.reshape(img.shape)
@@ -114,8 +112,3 @@ image = numpy.asarray(img_no_padding).astype(dtype=numpy.uint8)
 # verifyImage(image, kernel_mid)
 
 save_image(image, "output_" + kernel_name + ".jpg")
-
-
-
-
-

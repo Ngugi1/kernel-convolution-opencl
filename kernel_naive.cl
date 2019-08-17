@@ -1,12 +1,12 @@
-__kernel void convolve(
-    __global unsigned char* input,
-    __global unsigned char* output,
-    __global float* img_kernel,
-    const  int kernel_dim,
-    const  int kernel_mid,
-    const  int width,
-    const  int height,
-    const  int depth){
+kernel void convolve(
+    global unsigned char* input,
+    global unsigned char* output,
+    global float* img_kernel,
+      int kernel_dim,
+      int kernel_mid,
+      int width,
+      int height,
+      int depth){
     
     // Ignore pixels used for padding
     int row = get_global_id(0);

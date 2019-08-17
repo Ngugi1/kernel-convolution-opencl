@@ -2,11 +2,11 @@ __kernel void convolve(
     __global   uchar4* input,
     __global   uchar4* output,
     __constant float* img_kernel,
-    const  int kernel_dim,
-    const  int kernel_mid,
-    const  int width,
-    const  int height,
-    const  int depth){ // Depth is not used here, retained for API convinience
+    int kernel_dim,
+    int kernel_mid,
+    int width,
+    int height,
+    int depth){ // Depth is not used here, retained for API convinience
     // Ignore the pixels used for padding 
     int row = get_global_id(0);
     int column = get_global_id(1);
